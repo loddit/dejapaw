@@ -1,6 +1,6 @@
 {
   "name": "Dejapaw",
-  "version": "0.1",
+  "version": "0.2",
   "description": "catch everything for the dejavu cat",
   "manifest_version": 2,
   "icons": {
@@ -12,12 +12,21 @@
     "default_icon": "images/icon.png",
     "default_title": "Dejapaw"
   },
+  "background": {
+    "scripts": ["background.js"]
+  },
   "options_page": "options.html",
   "permissions": [
+    "activeTab",
     "webRequest",
     "webRequestBlocking",
     "storage",
     "http://*/*",
     "https://*/*"
+  ],
+  "web_accessible_resources": [
+    "images/icon.png",
+    "standalone.module.js",
+    "pure-min.css"
   ]
 }
