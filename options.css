@@ -1,6 +1,7 @@
 body {
   background-color: #f3f3f3;
 }
+
 .spacer {
   display: inline-block;
   width: 8px;
@@ -10,7 +11,7 @@ body {
   width: 640px;
   padding: 20px;
   margin: auto;
-  font-size: 15px;
+  font-size: 16px;
   font-family: FreeSans,Arimo,"Droid Sans",Helvetica,Arial,sans-serif;
   background-color: #fff;
   height: 100vh;
@@ -28,7 +29,17 @@ header {
   margin: 0 12px;
 }
 
+.tips {
+  color: #999;
+}
+
 .delete {
-  color: #aaa;
+  color: #999;
   margin: 0 6px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.delete:hover {
+  color: #666;
 }

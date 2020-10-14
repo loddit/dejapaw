@@ -27,6 +27,7 @@
     string: "Select Text By Mouse",
     image: "Right Click Image",
     number: "Select Number By Mouse",
+    clipboard: "Press Ctrl/Cmd + v"
   }
 
   const App = () => {
@@ -74,6 +75,11 @@
             window.getSelection().empty()
             return section ?  parseInt(section.replace(/[^(0-9|.)]/g, ""), 10) : null
           }]
+        case 'clipboard':
+          return ['paste', (event) => {
+            return event.clipboardData.getData('Text')
+          }]
+
         default:
           throw Error('wrong field type')
       }

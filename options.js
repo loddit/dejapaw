@@ -43,7 +43,6 @@ const App = () => {
     setWebhook(currentWebhook)
   }
 
-
   return html`
     <div class="app">
       <header>
@@ -87,7 +86,6 @@ const App = () => {
              <li>
                ${f.name} | ${f.type}
                <a
-                 href="#"
                  class="delete"
                  onClick=${() => {
                    const newFields = [...fields]
@@ -109,7 +107,7 @@ const App = () => {
             <fieldset>
               <input
                 type="text"
-                placeholder="字段名称"
+                placeholder="Field Name"
                 value=${fieldName}
                 onKeyup=${e => setFieldName(e.target.value)}
               />
@@ -121,6 +119,7 @@ const App = () => {
                 <option value="image">Image</option>
                 <option value="string">String</option>
                 <option value="number">Number</option>
+                <option value="clipboard">Clipboard</option>
               </select>
               <span class="spacer" />
               <button
