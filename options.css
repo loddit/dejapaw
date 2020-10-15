@@ -33,13 +33,26 @@ header {
   color: #999;
 }
 
-.delete {
+.action {
   color: #999;
-  margin: 0 6px;
   text-decoration: none;
   cursor: pointer;
 }
 
 .delete:hover {
   color: #666;
+}
+
+.checkbox-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fields {
+  display: flex;
+}
+
+#label {
+  margin: 4px 0 0;
 }

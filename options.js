@@ -22,6 +22,7 @@ const App = () => {
   const [fields, setFields] = useState([])
   const [fieldName, setFieldName] = useState('')
   const [fieldType, setFieldType] = useState('string')
+  const [isRequired, setIsRequired] = useState(true)
   const [webhook, setWebhook] = useState('')
   const [currentWebhook, setCurrentWebhook] = useState('')
 
@@ -36,6 +37,7 @@ const App = () => {
 
   const resetField = () => {
     setFieldName('')
+    setFieldName(true)
     setFieldType('string')
     setIsAdding(false)
   }
@@ -79,37 +81,52 @@ const App = () => {
         </fieldset>
       </div>
 
-      <h3>Manage Your field List</h3>
-      <ol>
-        ${(fields || []).map((f, index) =>
-           html`
-             <li>
-               ${f.name} | ${f.type}
-               <a
-                 class="delete"
-                 onClick=${() => {
-                   const newFields = [...fields]
-                   newFields.splice(index, 1)
-                   storage.set({fields: newFields}, () => {
-                     setFields(newFields)
-                   })
-                 }}
-               >
-                 x
-               </a>
-             </li>
-           `
-        )}
-      </ol>
+      <h3>Manage Your Fields List</h3>
+      <table class="pure-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Required</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(fields || []).map((f, index) =>
+            html`
+              <tr>
+                 <td style=${{minWidth: 120}}>${f.name}</td>
+                 <td>${f.type}</td>
+                 <td>${f.isRequired ? '√' : '×'}</td>
+                 <td style=${{width: 120}}>
+                  <a
+                    class="action"
+                    onClick=${() => {
+                      const newFields = [...fields]
+                      newFields.splice(index, 1)
+                      storage.set({fields: newFields}, () => {
+                        setFields(newFields)
+                      })
+                    }}
+                  >
+                    delete
+                  </a>
+                </td>
+              </tr>
+            `
+          )}
+        </tbody>
+      </table>
+      <br/>
       ${isAdding ?
         html`
-          <div class="pure-form">
-            <fieldset>
+          <div class="pure-form fields">
               <input
                 type="text"
                 placeholder="Field Name"
                 value=${fieldName}
                 onKeyup=${e => setFieldName(e.target.value)}
+                width="80"
               />
               <span class="spacer" />
               <select
@@ -122,6 +139,15 @@ const App = () => {
                 <option value="clipboard">Clipboard</option>
               </select>
               <span class="spacer" />
+              <div class="checkbox-label">
+                <input type="checkbox"
+                  checked=${isRequired}
+                  id="required"
+                  onClick=${() => setIsRequired(!isRequired)}
+                />
+                <label for="required" id="label">required</label>
+              </div>
+              <span class="spacer" />
               <button
                 class="pure-button"
                 onClick=${resetField}
@@ -132,7 +158,7 @@ const App = () => {
               <button
                 class="pure-button pure-button-primary"
                 onClick=${() => {
-                  const newFields = [...fields, {name: fieldName, type: fieldType}]
+                  const newFields = [...fields, {name: fieldName, type: fieldType, isRequired}]
                   storage.set({fields: newFields}, () => {
                     resetField()
                     setIsAdding(false)
@@ -143,7 +169,6 @@ const App = () => {
               >
                 Save
               </button>
-            </fieldset>
           </div>
         ` : html`
           <button class="pure-button" onClick=${() => setIsAdding(true)}>

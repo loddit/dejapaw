@@ -53,6 +53,8 @@
 
     const setCurrentValue = (newValue) => setValue(newValue, currentIndex)
 
+    const isAllRequiredFiledsFilled = fields.length > 0 && fields.map((f, index) => !f.isRequired || !!values[index]).every(Boolean)
+
     getEventTypeAndCallbackByFieldType = (type) => {
       switch (type) {
         case 'string':
@@ -116,12 +118,15 @@
                <li class="dejapaw-li" key="${index}">
                  <div class="dejapaw-li-header">
                    <div class="dejapaw-li-title">
-                     ${f.name}
+                     ${f.name}${f.isRequired ?  "*": ''}
                    </div>
                    <div class="dejapaw-li-type">
                      ${f.type}
                    </div>
                    <div>
+                     <a class="dejapaw-action" onClick=${() => setCurrentIndex(index + 1)} >
+                       pass
+                     </a>
                      <a class="dejapaw-action" onClick=${() => setCurrentIndex(index)} >
                        redo
                      </a>
@@ -147,6 +152,9 @@
           )}
         </ol>
         <div class="dejapaw-footer">
+          <div class="dejapaw-tips">
+            * Required Field
+          </div>
           <button
             class="dejapaw-button"
             onClick=${() =>
@@ -158,7 +166,7 @@
           <button
             class="dejapaw-button"
             onClick=${() => console.log(1)}
-            disabled=${values.filter(Boolean).length < fields.length}
+            disabled=${!isAllRequiredFiledsFilled}
           >
             Send
           </button>
@@ -232,7 +240,7 @@
           .dejapaw-action {
             color: #999;
             cursor: pointer;
-            margin: 0 6px;
+            margin: 0 3px;
           }
 
           .dejapaw-action:hover {
@@ -241,7 +249,13 @@
 
           .dejapaw-footer {
             margin-top: 12px;
-            text-align: right;
+            display: flex;
+          }
+
+          .dejapaw-tips {
+            flex-grow: 1;
+            font-size: 13px;
+            font-weight: 600;
           }
 
           .dejapaw-button {
