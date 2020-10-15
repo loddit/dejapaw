@@ -31,6 +31,8 @@
   }
 
   const App = () => {
+    const [x, setX] = useState(0)
+    const [y, setY] = useState(0)
     const [bottom, setBottom] = useState(20)
     const [right, setRight] = useState(20)
     const [values, setValues] = useState([])
@@ -88,6 +90,25 @@
     }
 
     useEffect(() => {
+      const dragStart = (evnet) => {
+        setX(evnet.x)
+        setY(evnet.y)
+      }
+      const dragEnd = (evnet) => {
+        setRight(right + (x - event.x))
+        setBottom(bottom + (y - event.y))
+        setX(0)
+        setY(0)
+      }
+      document.addEventListener('dragstart', dragStart)
+      document.addEventListener('dragend', dragEnd)
+      return () => {
+        document.removeEventListener('dragstart', dragStart)
+        document.removeEventListener('dragend', dragEnd)
+      }
+    }, [x, y, right, bottom])
+
+    useEffect(() => {
       if (fields[currentIndex]) {
         const [eventType, callback] = getEventTypeAndCallbackByFieldType(fields[currentIndex].type)
         const handler = (event) => {
@@ -106,7 +127,7 @@
     }, [fields.length, currentIndex])
 
     return html`
-      <div id="dejapaw-root" style=${{right, bottom}}>
+      <div id="dejapaw-root" style=${{right, bottom}} draggable="true">
         <div class="dejapaw-head">
           <h2 class="dejapaw-title">Dejapaw Go!</h2>
           <img src=${logoUrl} alt="Logo" class="dejapaw-logo"/>
