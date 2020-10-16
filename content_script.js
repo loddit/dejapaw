@@ -45,6 +45,10 @@
         setFields(result.fields || [])
         setValues(Array(result.fields.length).fill(''))
       })
+      storage.get(['webhook'], result => {
+        setWebhook(result.webhook || '')
+      })
+
     }, [])
 
     const setValue = (newValue, index) => {
@@ -126,6 +130,26 @@
       }
     }, [fields.length, currentIndex])
 
+    const sendData = () => {
+      const data = {}
+      fields.forEach((field, index) => {
+        data[field.name] = values[index] || undefined
+      })
+      fetch(webhook, {
+        body: JSON.stringify(data),
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'user-agent': 'Mozilla/4.0 MDN Example',
+          'content-type': 'application/json'
+        },
+        method: 'POST',
+        mode: 'cors',
+        redirect: 'follow',
+        referrer: 'no-referrer',
+      })
+    }
+
     return html`
       <div id="dejapaw-root" style=${{right, bottom}} draggable="true">
         <div class="dejapaw-head">
@@ -186,7 +210,7 @@
           </button>
           <button
             class="dejapaw-button"
-            onClick=${() => console.log(1)}
+            onClick=${sendData}
             disabled=${!isAllRequiredFiledsFilled}
           >
             Send

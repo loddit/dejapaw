@@ -32,6 +32,8 @@ Setup your fields list.
 
 set a Webhook you will use it to collecte scraped data.
 
+you can use [PostBin](https://postb.in/) for testing.
+
 Go to the web page you want to scrap.
 
 Left Click extension icon, a popup will apear.
