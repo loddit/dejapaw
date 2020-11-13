@@ -39,6 +39,8 @@
     const [fields, setFields] = useState([])
     const [webhook, setWebhook] = useState('')
     const [currentIndex, setCurrentIndex] = useState(0)
+    const [error, setError] = useState('')
+    const [isSending, setIsSending] = useState(false)
 
     useEffect(() => {
       storage.get(['fields'], result => {
@@ -130,17 +132,19 @@
       }
     }, [fields.length, currentIndex])
 
+    const onClose = () => render(null, dejapaw)
+
     const sendData = () => {
       const data = {}
       fields.forEach((field, index) => {
         data[field.name] = values[index] || undefined
       })
+      setIsSending(true)
       fetch(webhook, {
         body: JSON.stringify(data),
         cache: 'no-cache',
         credentials: 'same-origin',
         headers: {
-          'user-agent': 'Mozilla/4.0 MDN Example',
           'content-type': 'application/json'
         },
         method: 'POST',
@@ -148,6 +152,15 @@
         redirect: 'follow',
         referrer: 'no-referrer',
       })
+        .catch(error => setError(`Error: ${error}`))
+        .then((response) => {
+          if (response.ok) {
+            setError('')
+            onClose()
+          } else {
+            setError(`Error: ${response.status} ${response.statusText}`)
+          }
+        }).finally(() => setIsSending(false))
     }
 
     return html`
@@ -202,19 +215,20 @@
           </div>
           <button
             class="dejapaw-button"
-            onClick=${() =>
-              render(null, dejapaw)
-            }
+            onClick=${onClose}
           >
             Close
           </button>
           <button
             class="dejapaw-button"
             onClick=${sendData}
-            disabled=${!isAllRequiredFiledsFilled}
+            disabled=${!isAllRequiredFiledsFilled || isSending}
           >
-            Send
+            ${isSending ? 'Sending' : 'Send'}
           </button>
+        </div>
+        <div class="dejapaw-error">
+          ${error}
         </div>
         <style>
           @keyframes slidein {
@@ -295,6 +309,11 @@
           .dejapaw-footer {
             margin-top: 12px;
             display: flex;
+          }
+
+          .dejapaw-error {
+            margin-top: 4px;
+            color: red;
           }
 
           .dejapaw-tips {
