@@ -57,6 +57,7 @@ const App = () => {
           <input
             type="text"
             placeholder="Full URL"
+            class="webhook"
             value=${webhook}
             onKeyup=${e => setWebhook(e.target.value)}
           />

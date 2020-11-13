@@ -170,7 +170,7 @@
           <img src=${logoUrl} alt="Logo" class="dejapaw-logo"/>
         </div>
         <br/>
-        <ol>
+        <ol class="dejapaw-list">
           ${(fields || []).map((f, index) =>
              html`
                <li class="dejapaw-li" key="${index}">
@@ -258,15 +258,16 @@
             margin-top: 2px;
             border: 1px solid #999;
             border-radius: 4px;
+            padding: 3px 6px;
           }
 
-          .dejapaw-head {
+          #dejapaw-root .dejapaw-head {
             display: flex;
             justify-content: space-between;
             align-items: center;
           }
 
-          .dejapaw-logo {
+          #dejapaw-root .dejapaw-logo {
             width: 36px;
             height: auto;
             margin-right: 6px;
@@ -274,55 +275,66 @@
             animation-name: slidein;
           }
 
+          #dejapaw-root .dejapaw-list {
+            padding-inline-start: 0;
+          }
+
           #dejapaw-root .dejapaw-li input.current {
             border: 1px solid red;
           }
 
-          .dejapaw-li-header {
+          #dejapaw-root .dejapaw-li-header {
             margin-top: 8px;
             display: flex;
             justify-content: space-between;
           }
 
-          .dejapaw-li-title {
+          #dejapaw-root .dejapaw-title {
+            margin: 0;
+            font-size: 32px;
+            font-famliy: x-locale-heading-primary,zillaslab,Palatino,"Palatino Linotype",x-locale-heading-secondary,serif;
+            font-weight: 600;
+          }
+
+          #dejapaw-root .dejapaw-li-title {
             font-size: 16px;
             font-weight: 600;
           }
 
-          .dejapaw-li-type {
+          #dejapaw-root .dejapaw-li-type {
             font-size: 14px;
             color: #999;
             flex-grow: 1;
             margin-left: 6px;
           }
 
-          .dejapaw-action {
+          #dejapaw-root .dejapaw-action {
             color: #999;
             cursor: pointer;
             margin: 0 3px;
           }
 
-          .dejapaw-action:hover {
+          #dejapaw-root .dejapaw-action:hover {
             color: #666;
           }
 
-          .dejapaw-footer {
+          #dejapaw-root .dejapaw-footer {
             margin-top: 12px;
             display: flex;
           }
 
-          .dejapaw-error {
+          #dejapaw-root .dejapaw-error {
             margin-top: 4px;
             color: red;
           }
 
-          .dejapaw-tips {
+          #dejapaw-root .dejapaw-tips {
             flex-grow: 1;
             font-size: 13px;
             font-weight: 600;
           }
 
-          .dejapaw-button {
+          #dejapaw-root .dejapaw-button {
             color: #fff;
             background: #000;
             padding: 4px 6px;
@@ -330,7 +342,7 @@
             margin-left: 6px;
           }
 
-          .dejapaw-button:disabled {
+          #dejapaw-root .dejapaw-button:disabled {
             background: #aaa;
             color: #eee;
           }
