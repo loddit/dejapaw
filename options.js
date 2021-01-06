@@ -16,6 +16,8 @@ const mockStorage = {
 
 const storage = chrome.storage ? chrome.storage.sync : mockStorage
 
+const fieldTypes = ['string', 'number', 'image', 'clipboard', 'url', 'currency']
+
 
 const App = () => {
   const [isAdding, setIsAdding] = useState(false)
@@ -23,6 +25,7 @@ const App = () => {
   const [fieldName, setFieldName] = useState('')
   const [fieldType, setFieldType] = useState('string')
   const [isRequired, setIsRequired] = useState(true)
+  const [defaultValue, setDefaultValue] = useState('')
   const [webhook, setWebhook] = useState('')
   const [currentWebhook, setCurrentWebhook] = useState('')
 
@@ -37,7 +40,7 @@ const App = () => {
 
   const resetField = () => {
     setFieldName('')
-    setFieldName(true)
+    setDefaultValue('')
     setFieldType('string')
     setIsAdding(false)
   }
@@ -89,6 +92,7 @@ const App = () => {
             <th>Name</th>
             <th>Type</th>
             <th>Required</th>
+            <th>Default Value</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -99,6 +103,7 @@ const App = () => {
                  <td style=${{minWidth: 120}}>${f.name}</td>
                  <td>${f.type}</td>
                  <td>${f.isRequired ? '√' : '×'}</td>
+                 <td>${f.defaultValue}</td>
                  <td style=${{width: 120}}>
                   <a
                     class="action"
@@ -121,55 +126,66 @@ const App = () => {
       <br/>
       ${isAdding ?
         html`
-          <div class="pure-form fields">
-              <input
-                type="text"
-                placeholder="Field Name"
-                value=${fieldName}
-                onKeyup=${e => setFieldName(e.target.value)}
-                width="80"
-              />
-              <span class="spacer" />
-              <select
-                value=${fieldType}
-                onChange=${e => setFieldType(e.target.value)}
-              >
-                <option value="image">Image</option>
-                <option value="string">String</option>
-                <option value="number">Number</option>
-                <option value="clipboard">Clipboard</option>
-              </select>
-              <span class="spacer" />
-              <div class="checkbox-label">
-                <input type="checkbox"
-                  checked=${isRequired}
-                  id="required"
-                  onClick=${() => setIsRequired(!isRequired)}
+          <div>
+            <div class="pure-form fields">
+                <input
+                  type="text"
+                  placeholder="Field Name"
+                  value=${fieldName}
+                  onKeyup=${e => setFieldName(e.target.value)}
+                  width="80"
                 />
-                <label for="required" id="label">required</label>
+                <span class="spacer" />
+                <select
+                  value=${fieldType}
+                  onChange=${e => setFieldType(e.target.value)}
+                >
+                ${fieldTypes.map(ft => html`
+                  <option value=${ft}>
+                    ${ft}
+                  </option>
+                `)}
+                </select>
+                <span class="spacer" />
+                <input
+                  type="text"
+                  placeholder="Default Value"
+                  value=${defaultValue}
+                  onKeyup=${e => setDefaultValue(e.target.value)}
+                />
+                <span class="spacer" />
+                <div class="checkbox-label">
+                  <input type="checkbox"
+                    checked=${isRequired}
+                    id="required"
+                    onClick=${() => setIsRequired(!isRequired)}
+                  />
+                  <label for="required" id="label">required</label>
+                </div>
               </div>
-              <span class="spacer" />
-              <button
-                class="pure-button"
-                onClick=${resetField}
-              >
-                Cancel
-              </button>
-              <span class="spacer" />
-              <button
-                class="pure-button pure-button-primary"
-                onClick=${() => {
-                  const newFields = [...fields, {name: fieldName, type: fieldType, isRequired}]
-                  storage.set({fields: newFields}, () => {
-                    resetField()
-                    setIsAdding(false)
-                    setFields(newFields)
-                  })
-                }}
-                disabled=${!fieldName || !fieldType || (fields || []).filter(f => f.name === fieldName).length > 0}
-              >
-                Save
-              </button>
+              <div class="pure-form fields">
+                <button
+                  class="pure-button"
+                  onClick=${resetField}
+                >
+                  Cancel
+                </button>
+                <span class="spacer" />
+                <button
+                  class="pure-button pure-button-primary"
+                  onClick=${() => {
+                    const newFields = [...fields, {name: fieldName, type: fieldType, isRequired, defaultValue}]
+                    storage.set({fields: newFields}, () => {
+                      resetField()
+                      setIsAdding(false)
+                      setFields(newFields)
+                    })
+                  }}
+                  disabled=${!fieldName || !fieldType || (fields || []).filter(f => f.name === fieldName).length > 0}
+                >
+                  Save
+                </button>
+            </div>
           </div>
         ` : html`
           <button class="pure-button" onClick=${() => setIsAdding(true)}>

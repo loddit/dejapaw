@@ -51,6 +51,7 @@ header {
 
 .fields {
   display: flex;
+  margin-top: 6px;
 }
 
 #label {

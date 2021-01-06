@@ -6,6 +6,8 @@
     document.body.appendChild(dejapaw)
   }
 
+  const lang = "en" //(navigator.language || navigator.userLanguage).substr(0, 2)
+
   function isDescendant(parent, child) {
     var node = child.parentNode
     while (node != null) {
@@ -27,7 +29,25 @@
     string: "Select Text By Mouse",
     image: "Right Click Image",
     number: "Select Number By Mouse",
-    clipboard: "Press Ctrl/Cmd + v"
+    clipboard: "Press Ctrl/Cmd + v",
+    currency: "Select A Currency",
+    url: "Input A URL(CurrentURL As Default)",
+  }
+
+  const CURRENCY_CHINESE_COPY = {
+    CNY: '人民币',
+    USD: '美元',
+    GBP: '英镑',
+    TWD: '新台币',
+    JPY: '日元',
+    HKD: '港币',
+    EUR: '欧元',
+    CAD: '加元',
+    AUD: '澳元',
+    KRW: '韩元',
+    SGD: '新币',
+    INR: '卢比',
+    MOP: '澳门元',
   }
 
   const App = () => {
@@ -45,7 +65,14 @@
     useEffect(() => {
       storage.get(['fields'], result => {
         setFields(result.fields || [])
-        setValues(Array(result.fields.length).fill(''))
+        setValues(
+          Array(result.fields.length)
+            .fill('')
+            .map((_, index) => {
+              const field = result.fields[index]
+              return field.defaultValue || (field.type === 'url' ? location.href : '')
+            })
+        )
       })
       storage.get(['webhook'], result => {
         setWebhook(result.webhook || '')
@@ -114,21 +141,28 @@
       }
     }, [x, y, right, bottom])
 
+
+    const currentField = fields[currentIndex]
+
     useEffect(() => {
-      if (fields[currentIndex]) {
-        const [eventType, callback] = getEventTypeAndCallbackByFieldType(fields[currentIndex].type)
-        const handler = (event) => {
-          const isDejapawEvent = isDescendant(dejapaw, event.target)
-          if (!isDejapawEvent) {
-            const newValue = callback(event)
-            if (newValue) {
-              setCurrentValue(newValue)
-              setCurrentIndex(index => index + 1)
+      if (currentField) {
+        if (['currency', 'url'].includes(currentField.type)) {
+          setCurrentIndex(index => index + 1)
+        } else {
+          const [eventType, callback] = getEventTypeAndCallbackByFieldType(currentField.type)
+          const handler = (event) => {
+            const isDejapawEvent = isDescendant(dejapaw, event.target)
+            if (!isDejapawEvent) {
+              const newValue = callback(event)
+              if (newValue) {
+                setCurrentValue(newValue)
+                setCurrentIndex(index => index + 1)
+              }
             }
           }
+          window.document.addEventListener(eventType, handler)
+          return () => window.document.removeEventListener(eventType, handler)
         }
-        window.document.addEventListener(eventType, handler)
-        return () => window.document.removeEventListener(eventType, handler)
       }
     }, [fields.length, currentIndex])
 
@@ -139,13 +173,14 @@
       fields.forEach((field, index) => {
         data[field.name] = values[index] || undefined
       })
+      //data["_xsrf"] = '2|365f6645|1a3306da69c5655ea9513bade52bc3d5|1605264830'
       setIsSending(true)
       fetch(webhook, {
         body: JSON.stringify(data),
         cache: 'no-cache',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: {
-          'content-type': 'application/json'
+          'content-type': 'application/json',
         },
         method: 'POST',
         mode: 'cors',
@@ -198,13 +233,27 @@
                      </a>
                    </div>
                  </div>
-                 <input
-                   class="${index === currentIndex ? 'current' : ''}"
-                   type="text"
-                   placeholder="${placeholderMap[f.type]}"
-                   value=${values[index]}
-                   onKeyUp=${e => setValue(e.target.value, index)}
-                 />
+                 ${f.type === 'currency'
+                   ? html`<select
+                      class="${index === currentIndex ? 'current' : ''}"
+                      placeholder="${placeholderMap[f.type]}"
+                      value=${values[index]}
+                      onChange=${e => setValue(e.target.value, index)}
+                     >
+                       ${Object.keys(CURRENCY_CHINESE_COPY).map(currencyCode => html`
+                        <option key=${currencyCode} value=${currencyCode}>
+                          ${lang === 'zh' ? CURRENCY_CHINESE_COPY[currencyCode] : currencyCode}
+                        </option>
+                       `)}
+                     </select>`
+                   : html`<input
+                     class="${index === currentIndex ? 'current' : ''}"
+                     type="text"
+                     placeholder="${placeholderMap[f.type]}"
+                     value=${values[index]}
+                     onKeyUp=${e => setValue(e.target.value, index)}
+                   />`
+                 }
                </li>
                `
           )}
