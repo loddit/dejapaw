@@ -41,6 +41,7 @@ const App = () => {
   const [defaultValue, setDefaultValue] = useState('')
   const [webhook, setWebhook] = useState('')
   const [currentWebhook, setCurrentWebhook] = useState('')
+  const [isUploadMode, setIsUploadMode] = useState(false)
 
   useEffect(() => {
     storage.get(['fields'], result =>
@@ -101,11 +102,34 @@ const App = () => {
         </td>
       </tr>
     `
-    const copyRecordsJSON = () => {
-      copyToClipboard(JSON.stringify(records, null, 2))
-      setIsCoping(true)
-      setTimeout(() => setIsCoping(false), 500)
+
+  const copyRecordsJSON = () => {
+    copyToClipboard(JSON.stringify(records, null, 2))
+    setIsCoping(true)
+    setTimeout(() => setIsCoping(false), 500)
+  }
+
+  const configFieldsFromFile = event => {
+    const file = event.target.files[0]
+    if (file) {
+      var reader = new FileReader()
+      reader.addEventListener('load', function() {
+        try {
+          const newFields = JSON.parse(reader.result)
+          if (!Array.isArray(newFields)) {
+            throw Error('Wrong JSON data')
+          }
+          storage.set({fields: newFields}, () => {
+            setFields(newFields)
+            setIsUploadMode(false)
+          })
+        } catch (error) {
+          alert(error)
+        }
+      })
+      reader.readAsText(file)
     }
+  }
 
   return html`
     <div class="app">
@@ -113,66 +137,84 @@ const App = () => {
         <img src="images/icon.png" />
         <div class="title">Dejapaw</div>
       </header>
-      <h3>Webhook Setting</h3>
-      <div class="pure-form">
-        <fieldset>
-          <div class="tips">If you leave Webhook Input empty, records will be saved locally.</div>
-          <input
-            type="text"
-            placeholder="Full URL"
-            class="webhook"
-            value=${webhook}
-            onKeyup=${e => setWebhook(e.target.value)}
-          />
+      <section>
+        <h3>Webhook Setting</h3>
+        <div class="pure-form">
+          <fieldset>
+            <div class="tips">If you leave Webhook Input empty, records will be saved locally.</div>
+            <input
+              type="text"
+              placeholder="Full URL"
+              class="webhook"
+              value=${webhook}
+              onKeyup=${e => setWebhook(e.target.value)}
+            />
+            <span class="spacer" />
+            <button
+              class="pure-button"
+              onClick=${clearWebhook}
+              disabled=${webhook === ''}
+            >
+              Clear
+            </button>
+            <span class="spacer" />
+            <button
+              class="pure-button pure-button-primary"
+              onClick=${() => {
+                storage.set({webhook: webhook}, () => setCurrentWebhook(webhook))
+              }}
+              disabled=${webhook === currentWebhook}
+            >
+              Save
+            </button>
+          </fieldset>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h3>Local Data</h3>
           <span class="spacer" />
-          <button
-            class="pure-button"
-            onClick=${clearWebhook}
-            disabled=${webhook === ''}
-          >
-            Clear
+          <div class="tips">${records.length} Records</div>
+        </div>
+        <table class="pure-table" id="records">
+          <thead>
+            <tr>
+              ${fields.map(f => html`<th key=${f.name}>${f.name}</th>`)}
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${records.map(renderRecord)}
+          </tbody>
+        </table>
+        <br />
+        <div>
+          <button disabled=${isCoping} class="pure-button pure-button-primary" onClick=${copyRecordsJSON}>
+            ${isCoping ? 'JSON Copyed!' : 'Copy JSON'}
           </button>
           <span class="spacer" />
-          <button
-            class="pure-button pure-button-primary"
-            onClick=${() => {
-              storage.set({webhook: webhook}, () => setCurrentWebhook(webhook))
-            }}
-            disabled=${webhook === currentWebhook}
-          >
-            Save
+          <button class="pure-button" onClick=${clearLocalRecords}>
+            Clear All
           </button>
-        </fieldset>
-      </div>
-      <div class="local-data">
-        <h3>Local Data</h3>
-        <span class="spacer" />
-        <div class="tips">${records.length} Records</div>
-      </div>
-      <table class="pure-table" id="records">
-        <thead>
-          <tr>
-            ${fields.map(f => html`<th key=${f.name}>${f.name}</th>`)}
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${records.map(renderRecord)}
-        </tbody>
-      </table>
-      <br />
-      <div>
-        <button disabled=${isCoping} class="pure-button pure-button-primary" onClick=${copyRecordsJSON}>
-          ${isCoping ? 'JSON Copyed!' : 'Copy JSON'}
-        </button>
-        <span class="spacer" />
-        <button class="pure-button" onClick=${clearLocalRecords}>
-          Clear All
-        </button>
-      </div>
+        </div>
+      </section>
 
 
-      <h3>Manage Your Fields List</h3>
+      <div class="section-title">
+        <h3>Manage Your Fields List</h3>
+        <span class="spacer" />
+        ${isUploadMode ? html`
+            <div class="pure-form">
+              <input type="file" accept=".json" onChange=${configFieldsFromFile}/>
+            </div>
+          ` : html`
+            <button class="pure-button" onClick=${() => setIsUploadMode(true)}>
+              Import Config File
+            </button>
+          `
+        }
+      </div>
       <table class="pure-table">
         <thead>
           <tr>
@@ -215,63 +257,63 @@ const App = () => {
         html`
           <div>
             <div class="pure-form fields">
-                <input
-                  type="text"
-                  placeholder="Field Name"
-                  value=${fieldName}
-                  onKeyup=${e => setFieldName(e.target.value)}
-                  width="80"
+              <input
+                type="text"
+                placeholder="Field Name"
+                value=${fieldName}
+                onKeyup=${e => setFieldName(e.target.value)}
+                width="80"
+              />
+              <span class="spacer" />
+              <select
+                value=${fieldType}
+                onChange=${e => setFieldType(e.target.value)}
+              >
+              ${fieldTypes.map(ft => html`
+                <option value=${ft}>
+                  ${ft}
+                </option>
+              `)}
+              </select>
+              <span class="spacer" />
+              <input
+                type="text"
+                placeholder="Default Value"
+                value=${defaultValue}
+                onKeyup=${e => setDefaultValue(e.target.value)}
+              />
+              <span class="spacer" />
+              <div class="checkbox-label">
+                <input type="checkbox"
+                  checked=${isRequired}
+                  id="required"
+                  onClick=${() => setIsRequired(!isRequired)}
                 />
-                <span class="spacer" />
-                <select
-                  value=${fieldType}
-                  onChange=${e => setFieldType(e.target.value)}
-                >
-                ${fieldTypes.map(ft => html`
-                  <option value=${ft}>
-                    ${ft}
-                  </option>
-                `)}
-                </select>
-                <span class="spacer" />
-                <input
-                  type="text"
-                  placeholder="Default Value"
-                  value=${defaultValue}
-                  onKeyup=${e => setDefaultValue(e.target.value)}
-                />
-                <span class="spacer" />
-                <div class="checkbox-label">
-                  <input type="checkbox"
-                    checked=${isRequired}
-                    id="required"
-                    onClick=${() => setIsRequired(!isRequired)}
-                  />
-                  <label for="required" id="label">required</label>
-                </div>
+                <label for="required" id="label">required</label>
               </div>
-              <div class="pure-form fields">
-                <button
-                  class="pure-button"
-                  onClick=${resetField}
-                >
-                  Cancel
-                </button>
-                <span class="spacer" />
-                <button
-                  class="pure-button pure-button-primary"
-                  onClick=${() => {
-                    const newFields = [...fields, {name: fieldName, type: fieldType, isRequired, defaultValue}]
-                    storage.set({fields: newFields}, () => {
-                      resetField()
-                      setIsAdding(false)
-                      setFields(newFields)
-                    })
-                  }}
-                  disabled=${!fieldName || !fieldType || fields.filter(f => f.name === fieldName).length > 0}
-                >
-                  Save
-                </button>
+            </div>
+            <div class="pure-form fields">
+              <button
+                class="pure-button"
+                onClick=${resetField}
+              >
+                Cancel
+              </button>
+              <span class="spacer" />
+              <button
+                class="pure-button pure-button-primary"
+                onClick=${() => {
+                  const newFields = [...fields, {name: fieldName, type: fieldType, isRequired, defaultValue}]
+                  storage.set({fields: newFields}, () => {
+                    resetField()
+                    setIsAdding(false)
+                    setFields(newFields)
+                  })
+                }}
+                disabled=${!fieldName || !fieldType || fields.filter(f => f.name === fieldName).length > 0}
+              >
+                Save
+              </button>
             </div>
           </div>
         ` : html`

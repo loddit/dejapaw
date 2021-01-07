@@ -24,6 +24,10 @@ header {
   align-items: center;
 }
 
+section {
+  margin: 24px 0;
+}
+
 .title {
   font-size: 36px;
   font-weight: 800;
@@ -73,13 +77,13 @@ header {
   overflow: hidden;
 }
 
-.local-data {
-  display: flex;
-  align-items: baseline;
-}
-
 .record-image {
   width: 80px;
   height: 80px;
   object-fit: fill;
+}
+
+.section-title {
+  display: flex;
+  align-items: baseline;
 }
