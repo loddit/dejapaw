@@ -1,6 +1,6 @@
 {
   "name": "Dejapaw",
-  "version": "0.4",
+  "version": "0.5",
   "description": "A Tool helps you to scrap data from web pages by hand",
   "manifest_version": 2,
   "icons": {
@@ -25,6 +25,7 @@
   "web_accessible_resources": [
     "images/icon.png",
     "standalone.module.js",
-    "pure-min.css"
+    "pure-min.css",
+    "options.html"
   ]
 }

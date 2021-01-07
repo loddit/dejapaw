@@ -8,6 +8,18 @@
 
   const lang = "en" //(navigator.language || navigator.userLanguage).substr(0, 2)
 
+  const copyToClipboard = str => {
+    const el = document.createElement('textarea')
+    el.value = str
+    el.setAttribute('readonly', '')
+    el.style.position = 'absolute'
+    el.style.left = '-9999px'
+    document.body.appendChild(el)
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+  }
+
   function isDescendant(parent, child) {
     var node = child.parentNode
     while (node != null) {
@@ -21,6 +33,7 @@
 
   const preactUrl = chrome.runtime.getURL("standalone.module.js")
   const logoUrl = chrome.runtime.getURL("images/icon.png")
+  const optionsUrl = chrome.runtime.getURL("options.html",)
   const { html, Component, render, useState, useEffect } = await import(preactUrl)
 
   const storage = chrome.storage.sync
@@ -58,9 +71,12 @@
     const [values, setValues] = useState([])
     const [fields, setFields] = useState([])
     const [webhook, setWebhook] = useState('')
+    const [records, setRecords] = useState([])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [error, setError] = useState('')
     const [isSending, setIsSending] = useState(false)
+    const [isSaved, setIsSaved] = useState(false)
+    const [isCoping, setIsCoping] = useState(false)
 
     useEffect(() => {
       storage.get(['fields'], result => {
@@ -78,6 +94,10 @@
         setWebhook(result.webhook || '')
       })
 
+      storage.get(['records'], result => {
+        setRecords(result.records || [])
+      })
+
     }, [])
 
     const setValue = (newValue, index) => {
@@ -90,7 +110,7 @@
 
     const isAllRequiredFiledsFilled = fields.length > 0 && fields.map((f, index) => !f.isRequired || !!values[index]).every(Boolean)
 
-    getEventTypeAndCallbackByFieldType = (type) => {
+    const getEventTypeAndCallbackByFieldType = (type) => {
       switch (type) {
         case 'string':
           return ['mouseup', () => {
@@ -173,7 +193,6 @@
       fields.forEach((field, index) => {
         data[field.name] = values[index] || undefined
       })
-      //data["_xsrf"] = '2|365f6645|1a3306da69c5655ea9513bade52bc3d5|1605264830'
       setIsSending(true)
       fetch(webhook, {
         body: JSON.stringify(data),
@@ -191,12 +210,34 @@
         .then((response) => {
           if (response.ok) {
             setError('')
-            onClose()
           } else {
             setError(`Error: ${response.status} ${response.statusText}`)
           }
         }).finally(() => setIsSending(false))
     }
+
+    const saveDataLocally = () => {
+      const record = {}
+      fields.forEach((field, index) => {
+        record[field.name] = values[index] || undefined
+      })
+      const newRecords = [...records, record]
+      storage.set({records: newRecords}, () => {
+        setIsSaved(true)
+        setRecords(newRecords)
+      })
+    }
+
+    const isLocalMode = webhook === ''
+
+    const copyRecordsJSON = () => {
+      setIsCoping(true)
+      copyToClipboard(JSON.stringify(records, null, 2))
+      setTimeout(() => setIsCoping(false), 500)
+    }
+
+    const clearRecords = () =>
+      storage.set({records: []}, () => setRecords([]))
 
     return html`
       <div id="dejapaw-root" style=${{right, bottom}} draggable="true">
@@ -268,17 +309,40 @@
           >
             Close
           </button>
-          <button
-            class="dejapaw-button"
-            onClick=${sendData}
-            disabled=${!isAllRequiredFiledsFilled || isSending}
-          >
-            ${isSending ? 'Sending' : 'Send'}
-          </button>
+          ${isLocalMode ? (
+            html`<button
+              class="dejapaw-button"
+              onClick=${saveDataLocally}
+              disabled=${!isAllRequiredFiledsFilled || isSaved}
+            >
+              Save
+            </button>`
+          ) : (
+            html`<button
+              class="dejapaw-button"
+              onClick=${sendData}
+              disabled=${!isAllRequiredFiledsFilled || isSending}
+            >
+              ${isSending ? 'Sending' : 'Send'}
+            </button>`
+          )}
         </div>
         <div class="dejapaw-error">
           ${error}
         </div>
+        ${isLocalMode && html`
+          <div class="dejapaw-records">
+            <a href=${optionsUrl} target="_blank" class="dejapaw-records-count">
+              ${records.length} Records Saved ➔
+            </a>
+            <button class="dejapaw-button-small" onClick=${copyRecordsJSON}>
+              ${isCoping ? 'Copied' : 'Copy'}
+            </button>
+            <button class="dejapaw-button-small" onClick=${clearRecords}>
+              Clear
+            </button>
+          </div>
+        `}
         <style>
           @keyframes slidein {
             from {
@@ -297,7 +361,7 @@
             padding: 20px;
             border: 1px solid #333;
             border-radius: 6px;
-            width: 280px;
+            width: 360px;
             background: #fcfcfc;
             font-family: FreeSans,Arimo,"Droid Sans",Helvetica,Arial,sans-serif;
             font-size: 14px;
@@ -391,9 +455,30 @@
             margin-left: 6px;
           }
 
+          #dejapaw-root .dejapaw-button-small {
+            color: #fff;
+            background: #666;
+            padding: 2px 4px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-left: 4px;
+          }
+
           #dejapaw-root .dejapaw-button:disabled {
             background: #aaa;
             color: #eee;
+          }
+
+          #dejapaw-root .dejapaw-records {
+            margin-top: 12px;
+            border-top: 1px solid #ccc;
+            padding-top: 6px;
+            display: flex;
+            align-items: center;
+          }
+
+          #dejapaw-root .dejapaw-records-count {
+            flex-grow: 1;
           }
         </style>
       </div>

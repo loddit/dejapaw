@@ -1,5 +1,17 @@
 import { html, Component, render, useState, useEffect } from './standalone.module.js'
 
+const copyToClipboard = str => {
+  const el = document.createElement('textarea')
+  el.value = str
+  el.setAttribute('readonly', '')
+  el.style.position = 'absolute'
+  el.style.left = '-9999px'
+  document.body.appendChild(el)
+  el.select()
+  document.execCommand('copy')
+  document.body.removeChild(el)
+}
+
 window._mockStorage = {}
 
 const mockStorage = {
@@ -18,10 +30,11 @@ const storage = chrome.storage ? chrome.storage.sync : mockStorage
 
 const fieldTypes = ['string', 'number', 'image', 'clipboard', 'url', 'currency']
 
-
 const App = () => {
   const [isAdding, setIsAdding] = useState(false)
   const [fields, setFields] = useState([])
+  const [records, setRecords] = useState([])
+  const [isCoping, setIsCoping] = useState(false)
   const [fieldName, setFieldName] = useState('')
   const [fieldType, setFieldType] = useState('string')
   const [isRequired, setIsRequired] = useState(true)
@@ -33,8 +46,12 @@ const App = () => {
     storage.get(['fields'], result =>
       setFields(result.fields || [])
     )
-    storage.get(['webhook'], result =>
+    storage.get(['webhook'], result => {
       setWebhook(result.webhook || '')
+      setCurrentWebhook(result.webhook || '')
+    })
+    storage.get(['records'], result =>
+      setRecords(result.records || [])
     )
   }, [])
 
@@ -44,9 +61,51 @@ const App = () => {
     setFieldType('string')
     setIsAdding(false)
   }
-  const resetWebhook = () => {
-    setWebhook(currentWebhook)
+
+  const clearWebhook = () => {
+    setWebhook('')
   }
+
+  const renderRecordCell = (record, field) => {
+    const value = record[field.name]
+    switch (field.type) {
+      case 'url':
+        return value ? html`<a href=${value}>${value}</a>` : '-'
+      case 'image':
+        return value ? html`<img src=${value} class="record-image" />` : '-'
+      default:
+        return value
+    }
+  }
+
+  const clearLocalRecords = () =>
+    storage.set({records: []}, () => setRecords([]))
+
+  const renderRecord = (record, index) =>
+    html`
+      <tr key=${record, index}>
+        ${fields.map(f => html`<td key=${f.name} class="record-cell">${renderRecordCell(record, f)}</td>`)}
+        <td>
+          <a
+            class="action"
+            onClick=${() => {
+              const newRecords = [...records]
+              newRecords.splice(index, 1)
+              storage.set({records: newRecords}, () => {
+                setRecords(newRecords)
+              })
+            }}
+          >
+            delete
+          </a>
+        </td>
+      </tr>
+    `
+    const copyRecordsJSON = () => {
+      copyToClipboard(JSON.stringify(records, null, 2))
+      setIsCoping(true)
+      setTimeout(() => setIsCoping(false), 500)
+    }
 
   return html`
     <div class="app">
@@ -57,6 +116,7 @@ const App = () => {
       <h3>Webhook Setting</h3>
       <div class="pure-form">
         <fieldset>
+          <div class="tips">If you leave Webhook Input empty, records will be saved locally.</div>
           <input
             type="text"
             placeholder="Full URL"
@@ -67,10 +127,10 @@ const App = () => {
           <span class="spacer" />
           <button
             class="pure-button"
-            onClick=${resetWebhook}
-            disabled=${webhook === currentWebhook}
+            onClick=${clearWebhook}
+            disabled=${webhook === ''}
           >
-            Reset
+            Clear
           </button>
           <span class="spacer" />
           <button
@@ -84,6 +144,33 @@ const App = () => {
           </button>
         </fieldset>
       </div>
+      <div class="local-data">
+        <h3>Local Data</h3>
+        <span class="spacer" />
+        <div class="tips">${records.length} Records</div>
+      </div>
+      <table class="pure-table" id="records">
+        <thead>
+          <tr>
+            ${fields.map(f => html`<th key=${f.name}>${f.name}</th>`)}
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${records.map(renderRecord)}
+        </tbody>
+      </table>
+      <br />
+      <div>
+        <button disabled=${isCoping} class="pure-button pure-button-primary" onClick=${copyRecordsJSON}>
+          ${isCoping ? 'JSON Copyed!' : 'Copy JSON'}
+        </button>
+        <span class="spacer" />
+        <button class="pure-button" onClick=${clearLocalRecords}>
+          Clear All
+        </button>
+      </div>
+
 
       <h3>Manage Your Fields List</h3>
       <table class="pure-table">
@@ -97,9 +184,9 @@ const App = () => {
           </tr>
         </thead>
         <tbody>
-          ${(fields || []).map((f, index) =>
+          ${fields.map((f, index) =>
             html`
-              <tr>
+              <tr key=${index}>
                  <td style=${{minWidth: 120}}>${f.name}</td>
                  <td>${f.type}</td>
                  <td>${f.isRequired ? '√' : '×'}</td>
@@ -181,7 +268,7 @@ const App = () => {
                       setFields(newFields)
                     })
                   }}
-                  disabled=${!fieldName || !fieldType || (fields || []).filter(f => f.name === fieldName).length > 0}
+                  disabled=${!fieldName || !fieldType || fields.filter(f => f.name === fieldName).length > 0}
                 >
                   Save
                 </button>
