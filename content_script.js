@@ -292,7 +292,10 @@
                      type="text"
                      placeholder="${placeholderMap[f.type]}"
                      value=${values[index]}
-                     onKeyUp=${e => setValue(e.target.value, index)}
+                     onKeyUp=${e => {
+                       const newValue = e.target.value
+                       setValue(f.type === 'number' ? parseInt(newValue, 10) || null : newValue, index)
+                     }}
                    />`
                  }
                </li>
