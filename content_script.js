@@ -358,11 +358,16 @@
             }
           }
 
+          #dejapaw-root *:not(style):not(select) {
+            all: initial;
+            font-family: FreeSans,Arimo,"Droid Sans",Helvetica,Arial,sans-serif;
+          }
+
           #dejapaw-root {
             position: fixed;
             z-index: 10000;
             padding: 20px;
-            border: 1px solid #333;
+            border: 1.5px solid #333;
             border-radius: 6px;
             width: 360px;
             background: #fcfcfc;
@@ -371,6 +376,7 @@
           }
 
           #dejapaw-root .dejapaw-li input {
+            width: 300px;
             margin-top: 2px;
             border: 1px solid #999;
             border-radius: 4px;
@@ -389,6 +395,7 @@
             margin-right: 6px;
             animation-duration: 0.6s;
             animation-name: slidein;
+            cursor: move;
           }
 
           #dejapaw-root .dejapaw-list {
@@ -408,7 +415,6 @@
           #dejapaw-root .dejapaw-title {
             margin: 0;
             font-size: 32px;
-            font-famliy: x-locale-heading-primary,zillaslab,Palatino,"Palatino Linotype",x-locale-heading-secondary,serif;
             font-weight: 600;
           }
 
@@ -456,15 +462,17 @@
             padding: 4px 6px;
             border-radius: 4px;
             margin-left: 6px;
+            cursor: pointer;
           }
 
           #dejapaw-root .dejapaw-button-small {
             color: #fff;
             background: #666;
-            padding: 2px 4px;
-            font-size: 12px;
+            padding: 3px 5px;
+            font-size: 13px;
             border-radius: 4px;
             margin-left: 4px;
+            cursor: pointer;
           }
 
           #dejapaw-root .dejapaw-button:disabled {
@@ -481,7 +489,12 @@
           }
 
           #dejapaw-root .dejapaw-records-count {
+            cursor: pointer;
             flex-grow: 1;
+          }
+
+          #dejapaw-root .dejapaw-records-count:hover {
+            text-decoration: underline;
           }
         </style>
       </div>
