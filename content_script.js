@@ -184,7 +184,7 @@
           return () => window.document.removeEventListener(eventType, handler)
         }
       }
-    }, [fields.length, currentIndex])
+    }, [fields.length, currentIndex, ...values])
 
     const onClose = () => render(null, dejapaw)
 
