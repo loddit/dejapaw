@@ -272,22 +272,28 @@
                    <div class="dejapaw-li-type">
                      ${f.type}
                    </div>
-                   <div>
-                     <a class="dejapaw-action" onClick=${() => setCurrentIndex(index + 1)} >
-                       pass
-                     </a>
-                     <a class="dejapaw-action" onClick=${() => setCurrentIndex(index)} >
-                       redo
-                     </a>
-                     <a
-                       class="dejapaw-action"
-                       onClick=${event => {
-                         setValue(null, index)
-                       }}
-                     >
-                       reset
-                     </a>
-                   </div>
+                   ${f.type !== 'url' && (
+                     html`
+                       <div>
+                         ${currentIndex === index && html`
+                           <a class="dejapaw-action" onClick=${() => setCurrentIndex(index + 1)} >
+                             ⇓
+                           </a>
+                         `}
+                         <a class="dejapaw-action" onClick=${() => setCurrentIndex(index)} >
+                           ⟳
+                         </a>
+                         <a
+                           class="dejapaw-action"
+                           onClick=${event => {
+                             setValue(null, index)
+                           }}
+                         >
+                           ⊗
+                         </a>
+                       </div>
+                     `
+                   )}
                  </div>
                  ${f.type === 'currency'
                    ? html`<select
@@ -305,6 +311,7 @@
                    : html`<input
                      class="${index === currentIndex ? 'current' : ''}"
                      type="text"
+                     disabled=${f.type === 'url'}
                      placeholder="${placeholderMap[f.type]}"
                      value=${values[index]}
                      onKeyUp=${e => {
@@ -321,12 +328,6 @@
           <div class="dejapaw-tips">
             * Required Field
           </div>
-          <button
-            class="dejapaw-button"
-            onClick=${onClose}
-          >
-            Close
-          </button>
           ${isLocalMode ? (
             html`<button
               class="dejapaw-button"
@@ -384,7 +385,6 @@
             padding: 20px;
             border: 1.5px solid #333;
             border-radius: 6px;
-            width: 360px;
             background: #fcfcfc;
             font-family: FreeSans,Arimo,"Droid Sans",Helvetica,Arial,sans-serif;
             font-size: 13px;
@@ -392,7 +392,7 @@
           }
 
           #dejapaw-root .dejapaw-li input {
-            width: 300px;
+            width: 240px;
             margin-top: 2px;
             border: 1px solid #999;
             border-radius: 4px;
@@ -403,14 +403,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: move;
           }
 
           #dejapaw-root .dejapaw-logo {
             width: 28px;
             height: auto;
-            margin-left: -100px;
+            margin-left: -60px;
             animation-duration: 0.6s;
             animation-name: slidein;
+            cursor: move;
           }
 
           #dejapaw-root .dejapaw-close {
@@ -429,6 +431,11 @@
 
           #dejapaw-root .dejapaw-li input.current {
             border: 1px solid red;
+          }
+
+          #dejapaw-root .dejapaw-li input:disabled {
+            background-color: #eee;
+            color: #999;
           }
 
           #dejapaw-root .dejapaw-li-header {
@@ -459,6 +466,7 @@
             color: #999;
             cursor: pointer;
             margin: 0 3px;
+            font-weight: 600;
           }
 
           #dejapaw-root .dejapaw-action:hover {
@@ -501,7 +509,7 @@
           }
 
           #dejapaw-root .dejapaw-button:disabled {
-            background: #aaa;
+            background-color: #aaa;
             color: #eee;
           }
 
@@ -521,6 +529,7 @@
           #dejapaw-root .dejapaw-records-count:hover {
             text-decoration: underline;
           }
+
         </style>
       </div>
     `
