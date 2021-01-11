@@ -258,6 +258,7 @@
         <div class="dejapaw-head">
           <h2 class="dejapaw-title">Dejapaw Go!</h2>
           <img src=${logoUrl} alt="Logo" class="dejapaw-logo"/>
+          <a onClick=${onClose} class="dejapaw-close">x</a>
         </div>
         <br/>
         <ol class="dejapaw-list">
@@ -386,7 +387,8 @@
             width: 360px;
             background: #fcfcfc;
             font-family: FreeSans,Arimo,"Droid Sans",Helvetica,Arial,sans-serif;
-            font-size: 14px;
+            font-size: 13px;
+            cursor: move;
           }
 
           #dejapaw-root .dejapaw-li input {
@@ -404,12 +406,21 @@
           }
 
           #dejapaw-root .dejapaw-logo {
-            width: 36px;
+            width: 28px;
             height: auto;
-            margin-right: 6px;
+            margin-left: -100px;
             animation-duration: 0.6s;
             animation-name: slidein;
-            cursor: move;
+          }
+
+          #dejapaw-root .dejapaw-close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #999;
+          }
+
+          #dejapaw-root .dejapaw-close:hover {
+            color: #000;
           }
 
           #dejapaw-root .dejapaw-list {
@@ -428,7 +439,7 @@
 
           #dejapaw-root .dejapaw-title {
             margin: 0;
-            font-size: 32px;
+            font-size: 24px;
             font-weight: 600;
           }
 
@@ -438,7 +449,7 @@
           }
 
           #dejapaw-root .dejapaw-li-type {
-            font-size: 14px;
+            font-size: 13px;
             color: #999;
             flex-grow: 1;
             margin-left: 6px;
