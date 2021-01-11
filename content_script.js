@@ -1,4 +1,9 @@
+
+
 (async () => {
+  const DEFAULT_RIGHT = 20
+  const DEFAULT_BOTTOM = 20
+
   let dejapaw = document.getElementById("dejapaw")
   if (!dejapaw) {
     dejapaw = document.createElement('div')
@@ -66,8 +71,8 @@
   const App = () => {
     const [x, setX] = useState(0)
     const [y, setY] = useState(0)
-    const [bottom, setBottom] = useState(20)
-    const [right, setRight] = useState(20)
+    const [bottom, setBottom] = useState(DEFAULT_BOTTOM)
+    const [right, setRight] = useState(DEFAULT_RIGHT)
     const [values, setValues] = useState([])
     const [fields, setFields] = useState([])
     const [webhook, setWebhook] = useState('')
@@ -98,6 +103,12 @@
         setRecords(result.records || [])
       })
 
+      storage.get(['position'], result => {
+        if (result.position) {
+          setRight(result.position[0])
+          setBottom(result.position[1])
+        }
+      })
     }, [])
 
     const setValue = (newValue, index) => {
@@ -148,10 +159,13 @@
         setY(evnet.y)
       }
       const dragEnd = (evnet) => {
-        setRight(right + (x - event.x))
-        setBottom(bottom + (y - event.y))
+        const newRight = right + (x - event.x)
+        const newBottom = bottom + (y - event.y)
+        setRight(newRight)
+        setBottom(newBottom)
         setX(0)
         setY(0)
+        storage.set({position: [newRight, newBottom]})
       }
       document.addEventListener('dragstart', dragStart)
       document.addEventListener('dragend', dragEnd)

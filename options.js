@@ -1,5 +1,8 @@
 import { html, Component, render, useState, useEffect } from './standalone.module.js'
 
+const DEFAULT_RIGHT = 20
+const DEFAULT_BOTTOM = 20
+
 const copyToClipboard = str => {
   const el = document.createElement('textarea')
   el.value = str
@@ -42,6 +45,9 @@ const App = () => {
   const [webhook, setWebhook] = useState('')
   const [currentWebhook, setCurrentWebhook] = useState('')
   const [isUploadMode, setIsUploadMode] = useState(false)
+  const [bottom, setBottom] = useState(DEFAULT_BOTTOM)
+  const [right, setRight] = useState(DEFAULT_RIGHT)
+
 
   useEffect(() => {
     storage.get(['fields'], result =>
@@ -54,6 +60,12 @@ const App = () => {
     storage.get(['records'], result =>
       setRecords(result.records || [])
     )
+    storage.get(['position'], result => {
+      if (result.position) {
+        setRight(result.position[0])
+        setBottom(result.position[1])
+      }
+    })
   }, [])
 
   const resetField = () => {
@@ -322,6 +334,14 @@ const App = () => {
           </button>
         `
       }
+      <div class="section-title">
+        <h3>Position</h3>
+        <span class="spacer" />
+        <button class="pure-button" onClick=${() => storage.set({position: [DEFAULT_RIGHT, DEFAULT_BOTTOM]})}>
+          Reset
+        </button>
+      </div>
+
     </div>
   `
 }
